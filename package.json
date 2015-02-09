@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-submodules",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Control dependant ember-cli addons in git submodules",
   "main": "index.js",
   "scripts": {
@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/matthiasleitner/ember-cli-submodules/issues"
   },
-  "homepage": "https://github.com/matthiasleitner/ember-cli-submodules"
+  "homepage": "https://github.com/matthiasleitner/ember-cli-submodules",
+  "dependencies": {
+    "shelljs":"0.3.0"
+  }
 }
