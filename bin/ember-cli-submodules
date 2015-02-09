@@ -28,7 +28,8 @@ switch (task) {
       break;
     case 'u':
     case 'update':
-      cmd = 'git pull --recurse-submodules && git submodule update'
+      exec('git submodule foreach git pull');
+      exec('git submodule update');
       break;
     // proxy cmd to ember in each submodule
     case 'ember':
