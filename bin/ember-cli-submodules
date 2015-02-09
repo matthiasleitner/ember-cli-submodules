@@ -77,52 +77,50 @@ switch (task) {
     var hasDependency = dependencies !== undefined;
 
     if (hasDependency && dependencies[addonPath]) {
+      var addonDependecy = dependencies[addonPath];
+      var originalVersion = addonDependecy.resolved;
+      var hashPosition = originalVersion.indexOf('#');
+      var isGitVersion = hashPosition > 0;
 
-        var addonDependecy = dependencies[addonPath];
-        var originalVersion = addonDependecy.resolved;
-        var hashPosition = originalVersion.indexOf('#');
-        var isGitVersion = hashPosition > 0;
+      if (isGitVersion) {
+          version = originalVersion.substring(0, hashPosition + 1) + version;
+      };
 
-        if (isGitVersion) {
-            version = originalVersion.substring(0, hashPosition + 1) + version;
-        };
+      echo('upgrading ' + addonPath + ' in ' + pwd());
 
-        echo('upgrading ' + addonPath + ' in ' + pwd());
-
-        installPackageWithVersion(addonPath, version);
+      installPackageWithVersion(addonPath, version);
     } else {
-        echo(addonPath + ' is not a dependency');
+      echo(addonPath + ' is not a dependency');
     };
 
     break;
 }
 
 function bumpAllVersionCommand(addonPath, version) {
-    return SUBMODULE_FOR_EACH_PREFIX + 'ember-sub bump ' + addonPath + ' ' + version;
+  return SUBMODULE_FOR_EACH_PREFIX + 'ember-sub bump ' + addonPath + ' ' + version;
 }
 
 function prepareAddonForLink(addonPath, task) {
-    execOnAddon(addonPath, function() {
-        exec('npm ' + task);
-    });
+  execOnAddon(addonPath, function() {
+    exec('npm ' + task);
+  });
 }
 
 function createTag(addonPath, version) {
-    execOnAddon(addonPath, function() {
-
-        setPackageVersion(version);
-        pushTags();
-    });
+  execOnAddon(addonPath, function() {
+    setPackageVersion(version);
+    pushTags();
+  });
 }
 
 function pushTags() {
-    exec('git push');
-    exec('git push --tags');
+  exec('git push');
+  exec('git push --tags');
 }
 
 function setPackageVersion(version) {
-    echo('running npm version ' + version);
-    exec('npm version ' + version);
+  echo('running npm version ' + version);
+  exec('npm version ' + version);
 }
 
 function execOnAddon(addonPath, func) {
