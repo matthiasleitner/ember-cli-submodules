@@ -15,6 +15,8 @@ if(args.length == 0){
 var SUBMODULE_FOR_EACH_PREFIX = 'git submodule --quiet foreach ';
 var cmd = null;
 var task = args[0];
+var addonPath = args[1];
+var version = args[2];
 
 switch (task) {
     case 'init':
@@ -34,30 +36,107 @@ switch (task) {
       break;
     case 'link':
     case 'unlink':
-      var addonPath = args[1];
-
       if(addonPath === undefined){
         echo('No path to addon given as second argument');
         exit(1);
       }
 
-      prepareAddonForLink(task, addonPath);
+      prepareAddonForLink(addonPath, task);
 
       cmd = SUBMODULE_FOR_EACH_PREFIX + 'npm ' + task + ' ' + addonPath;
       break;
+    case 'version':
+      var upgradeAll = ['-u', '--upgrade'].indexOf(args[3]) > -1;
+
+      createTag(addonPath, version)
+
+      if(upgradeAll){
+        cmd = bumpAllVersionCommand(addonPath, version);
+      }
+
+      break;
+
+    case 'upgrade':
+      cmd = bumpAllVersionCommand(addonPath, version);
+      break;
+
+    case 'bump':
+      echo('In ' + pwd());
+
+      var npmListOutput = exec('npm list ' + addonPath + ' -json', {silent:true}).output;
+
+      if (!npmListOutput) {
+        exit(1);
+      };
+
+      var dependencies = JSON.parse(npmListOutput).dependencies;
+      var hasDependency = dependencies !== undefined;
+
+      if (hasDependency && dependencies[addonPath]) {
+
+        var addonDependecy = dependencies[addonPath];
+        var originalVersion = addonDependecy.resolved;
+        var hashPosition = originalVersion.indexOf('#');
+        var isGitVersion = hashPosition > 0;
+
+        if (isGitVersion) {
+          version = originalVersion.substring(0, hashPosition+1) + version;
+        };
+
+        echo('upgrading ' + addonPath + ' in ' + pwd());
+
+        installPackageWithVersion(addonPath, version);
+      } else {
+        echo(addonPath + ' is not a dependency');
+      };
+
+      break;
 }
 
-function prepareAddonForLink(task, addonPath){
-  exec('cd ' +  addonPath);
-  exec('npm '+ task);
-  exec('cd ..');
+function bumpAllVersionCommand(addonPath, version){
+  return SUBMODULE_FOR_EACH_PREFIX + 'ember-sub bump ' + addonPath + ' ' + version;
 }
 
-echo('Running: ', cmd)
+function prepareAddonForLink(addonPath, task){
+  execOnAddon(addonPath, function(){
+    exec('npm '+ task);
+  });
+}
 
-exec(cmd);
+function createTag(addonPath, version){
+  execOnAddon(addonPath, function(){
 
-echo('Done!');
+    setPackageVersion(version);
+    //pushTags();
+  });
+}
 
+function pushTags(){
+  exec('git push');
+  exec('git push --tags');
+}
 
+function setPackageVersion(version){
+  echo('running npm version ' + version);
+  exec('npm version ' + version);
+}
 
+function execOnAddon(addonPath, func){
+  echo('Swiching to ' + addonPath);
+  cd(addonPath);
+  func();
+  cd('..');
+  echo('Swiching back to working dir');
+}
+
+function installPackageWithVersion(name, version){
+  exec('npm install ' + name + '@' + version)
+}
+
+if (cmd !== null) {
+  echo('Running: ', cmd)
+
+  exec(cmd);
+};
+
+echo('Done with ' + args.join(' ') + '!' + ' in ' + pwd());
