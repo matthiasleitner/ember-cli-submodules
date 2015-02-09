@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+'use strict';
+
+require('shelljs/global');
+
+// Provide a title to the process in `ps`
+process.title = 'ember submodule';
+
+var args = process.argv.slice(2);
+
+if(args.length == 0){
+  echo('No argument given, see ember-sub --help');
+  exit(1);
+}
+var SUBMODULE_FOR_EACH_PREFIX = 'git submodule --quiet foreach ';
+var cmd = null;
+var task = args[0];
+
+switch (task) {
+    case 'init':
+      cmd = 'git submodule init && git submodule update'
+      break;
+    case 'i':
+    case 'install':
+      cmd = SUBMODULE_FOR_EACH_PREFIX + '"(bower i && npm i)"';
+      break;
+    case 'u':
+    case 'update':
+      cmd = 'git pull --recurse-submodules && git submodule update'
+      break;
+    // proxy cmd to ember in each submodule
+    case 'ember':
+      cmd = SUBMODULE_FOR_EACH_PREFIX + 'ember ' + args.slice(1).join(' ')
+      break;
+    case 'link':
+    case 'unlink':
+      var addonPath = args[1];
+
+      if(addonPath === undefined){
+        echo('No path to addon given as second argument');
+        exit(1);
+      }
+
+      prepareAddonForLink(task, addonPath);
+
+      cmd = SUBMODULE_FOR_EACH_PREFIX + 'npm ' + task + ' ' + addonPath;
+      break;
+}
+
+function prepareAddonForLink(task, addonPath){
+  exec('cd ' +  addonPath);
+  exec('npm '+ task);
+  exec('cd ..');
+}
+
+echo('Running: ', cmd)
+
+exec(cmd);
+
+echo('Done!');
+
+
+

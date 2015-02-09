@@ -1,0 +1,27 @@
+{
+  "name": "ember-cli-submodules",
+  "version": "1.0.0",
+  "description": "Control dependant ember-cli addons in git submodules",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ember-sub"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matthiasleitner/ember-cli-submodules.git"
+  },
+  "keywords": [
+    "ember-cli"
+  ],
+  "preferGlobal": true,
+  "bin": {
+    "ember-sub": "./bin/ember-cli-submodules"
+  },
+  "author": "Matthias Leitner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matthiasleitner/ember-cli-submodules/issues"
+  },
+  "homepage": "https://github.com/matthiasleitner/ember-cli-submodules"
+}
