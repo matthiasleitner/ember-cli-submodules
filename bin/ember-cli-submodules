@@ -107,7 +107,7 @@ function createTag(addonPath, version){
   execOnAddon(addonPath, function(){
 
     setPackageVersion(version);
-    //pushTags();
+    pushTags();
   });
 }
 
